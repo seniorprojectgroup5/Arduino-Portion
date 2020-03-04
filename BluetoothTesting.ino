@@ -1,10 +1,50 @@
 #include <Wire.h>
 #include "Adafruit_DRV2605.h"
 #include <SoftwareSerial.h>
+#include <millisDelay.h>
 
 Adafruit_DRV2605 drv;
+millisDelay v_Delay;
+millisDelay s_Delay;
+
+long int Data;
+
+class readSerial {
+  public:
+    void Update() {
+     // if (Serial.available() > 0) {
+        Serial.println("reading");
+        Data = Serial.parseInt();
+    //  }
+    }
+};
+
+class Vibrate {
+    long int vibrationEffect;
+    int v_times = 5;
+  public:
+    Vibrate(long int effect) {
+      vibrationEffect = effect;
+    }
+    void Update() {
+      Serial.println(vibrationEffect);
+      drv.setWaveform(0, vibrationEffect);  // play effect
+      drv.setWaveform(1, 0);
+      drv.go();
+    }
+};
+
+
+int iterate;
+
+Vibrate eff_1(1);
+Vibrate eff_4(4);
+Vibrate eff_7(7);
+
+readSerial BleData;
 
 void setup() {
+  // put your setup code here, to run once:
   Serial.begin(9600);
 
   Serial.println("Bluetooth test");
@@ -15,56 +55,37 @@ void setup() {
   // I2C trigger by sending 'go' command
   // default, internal trigger when sending GO command
   drv.setMode(DRV2605_MODE_INTTRIG);
+
+  Data = 0;
+  iterate = 2;
+
+  v_Delay.start(100);
+  s_Delay.start(1000);
 }
 
-long int effect = 0;
-long int numOfVibrations = 2;
-
 void loop() {
-  //  Serial.print("Effect #"); Serial.println(effect);
-  // get the value being set via bluetooth
+  // vibrate at a steady pace
+  if (v_Delay.justFinished()) {
+    v_Delay.repeat();
+    switch (Data) {
+      case 0:
+        // do nothing
+        break;
 
+      case 1:
+        eff_1.Update();
+        break;
 
-  if (Serial.available() > 0) {
-    effect = Serial.parseInt();
-    Serial.print("Received: ");
-    Serial.println(effect);
+      case 4:
+        eff_4.Update();
+        break;
 
-    // turn it off
-    if (effect == 0) {
-      Serial.println(("off"));
-    } else {
-      switch (effect) {
-        case 1:
-//          Serial.println("1 - looped");
-          break;
-
-        case 4:
-//          Serial.println("4 - looped");
-          break;
-
-        case 7:
-//          Serial.println("7 - looped");
-          break;
-
-        case 24:
-//          Serial.println("24 - looped");
-          break;
-
-        case 47:
-//          Serial.println("47 - looped");
-          break;
-      }
-      
-      // set the effect to play
-      drv.setWaveform(0, effect);  // play effect
-      drv.setWaveform(1, 0);       // end waveform
-      
-      for (int i = 0; i < numOfVibrations; i++) {
-        Serial.println(" ~ ");
-        // play the effect!
-        drv.go();
-      }
+      case 7:
+        eff_7.Update();
+        break;
     }
   }
+  // read the serial input away from the main
+  BleData.Update();
+  
 }
