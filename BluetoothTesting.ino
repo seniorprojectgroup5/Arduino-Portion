@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include "Adafruit_DRV2605.h"
+#include <SoftwareSerial.h>
 
 Adafruit_DRV2605 drv;
 
@@ -16,8 +17,8 @@ void setup() {
   drv.setMode(DRV2605_MODE_INTTRIG);
 }
 
-long int effect = 1;
-boolean canVibrate = false;
+long int effect = 0;
+long int numOfVibrations = 2;
 
 void loop() {
   //  Serial.print("Effect #"); Serial.println(effect);
@@ -26,47 +27,44 @@ void loop() {
 
   if (Serial.available() > 0) {
     effect = Serial.parseInt();
-    Serial.print("got something - ");
-    Serial.print(effect);
+    Serial.print("Received: ");
+    Serial.println(effect);
 
     // turn it off
     if (effect == 0) {
       Serial.println(("off"));
-      canVibrate = false;
     } else {
-      canVibrate = true;
+      switch (effect) {
+        case 1:
+//          Serial.println("1 - looped");
+          break;
+
+        case 4:
+//          Serial.println("4 - looped");
+          break;
+
+        case 7:
+//          Serial.println("7 - looped");
+          break;
+
+        case 24:
+//          Serial.println("24 - looped");
+          break;
+
+        case 47:
+//          Serial.println("47 - looped");
+          break;
+      }
+      
+      // set the effect to play
+      drv.setWaveform(0, effect);  // play effect
+      drv.setWaveform(1, 0);       // end waveform
+      
+      for (int i = 0; i < numOfVibrations; i++) {
+        Serial.println(" ~ ");
+        // play the effect!
+        drv.go();
+      }
     }
-  }
-
-  if (canVibrate) {
-    if (effect == 1) {
-      Serial.println(("1"));
-    }
-
-    if (effect == 4) {
-      Serial.println(("4"));
-    }
-
-    if (effect == 7) {
-      Serial.println(("7"));
-    }
-
-    if (effect == 24) {
-      Serial.println(("24"));
-    }
-
-    if (effect == 47) {
-      Serial.println(("47"));
-    }
-
-    // set the effect to play
-    drv.setWaveform(0, effect);  // play effect
-    drv.setWaveform(1, 0);       // end waveform
-
-    // play the effect!
-    drv.go();
-
-    // wait a bit
-    delay(100);
   }
 }
