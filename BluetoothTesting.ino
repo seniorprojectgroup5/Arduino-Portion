@@ -54,10 +54,10 @@ void setup() {
   drv.setMode(DRV2605_MODE_INTTRIG);
 
   Data = -1;
-  iterate = 1000;
+  iterate = 0;
 
   endTime = millis() + iterate;
-  v_Delay.start(10);
+  v_Delay.start(0);
 }
 
 void loop() {
