@@ -5,29 +5,25 @@
 
 Adafruit_DRV2605 drv;
 millisDelay v_Delay;
-millisDelay s_Delay;
 
 long int Data;
+char B[1];
 
-class readSerial {
-  public:
-    void Update() {
-     // if (Serial.available() > 0) {
-        Serial.println("reading");
-        Data = Serial.parseInt();
-    //  }
-    }
-};
+void readSerialInput() {
+  Serial.println("reading");
+  Serial.readBytes(B, 1);
+  Data = B[0] - '0';
+  Serial.println(Data);
+}
 
 class Vibrate {
     long int vibrationEffect;
-    int v_times = 5;
   public:
     Vibrate(long int effect) {
       vibrationEffect = effect;
     }
     void Update() {
-      Serial.println(vibrationEffect);
+//      Serial.println(vibrationEffect);
       drv.setWaveform(0, vibrationEffect);  // play effect
       drv.setWaveform(1, 0);
       drv.go();
@@ -35,13 +31,14 @@ class Vibrate {
 };
 
 
-int iterate;
+long int iterate;
+unsigned long endTime;
+
+Vibrate eff_0(0);
 
 Vibrate eff_1(1);
 Vibrate eff_4(4);
 Vibrate eff_7(7);
-
-readSerial BleData;
 
 void setup() {
   // put your setup code here, to run once:
@@ -56,20 +53,26 @@ void setup() {
   // default, internal trigger when sending GO command
   drv.setMode(DRV2605_MODE_INTTRIG);
 
-  Data = 0;
-  iterate = 2;
+  Data = -1;
+  iterate = 1000;
 
-  v_Delay.start(100);
-  s_Delay.start(1000);
+  endTime = millis() + iterate;
+  v_Delay.start(10);
 }
 
 void loop() {
-  // vibrate at a steady pace
+  if (millis() > endTime && Serial.available() > 0) {
+    endTime = millis() + iterate;
+    // read the serial input away from the main
+    readSerialInput();
+  }
+
   if (v_Delay.justFinished()) {
+    // vibrate at a steady pace
     v_Delay.repeat();
     switch (Data) {
       case 0:
-        // do nothing
+//        eff_0.Update();
         break;
 
       case 1:
@@ -83,9 +86,8 @@ void loop() {
       case 7:
         eff_7.Update();
         break;
+      case -1:
+        break;
     }
   }
-  // read the serial input away from the main
-  BleData.Update();
-  
 }
