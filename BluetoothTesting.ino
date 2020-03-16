@@ -9,10 +9,35 @@ millisDelay v_Delay;
 long int Data;
 char B[1];
 
+// vibrations:descriptors
+// 0:stop, 7:softest, 47:med, 24:sharp, 4:hard click, 1:hardest
+
+// inputs:vibrations
+// 0:do nothing, 1:7, 2:47, 3:24, 4:4, 5:1
 void readSerialInput() {
-  Serial.println("reading");
   Serial.readBytes(B, 1);
-  Data = B[0] - '0';
+  long int temp = B[0] - '0';
+  switch(temp){
+    case 0:
+      Data = 0;
+      break;
+    case 1:
+      Data = 47;
+      break;
+    case 2:
+      Data = 24;
+      break;
+    case 3:
+      Data = 4;
+      break;
+    case 4:
+      Data = 7;
+      break;
+    case 5:
+      Data = 1;
+      break;
+  }
+  
   Serial.println(Data);
 }
 
